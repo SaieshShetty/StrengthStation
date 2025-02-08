@@ -1,112 +1,169 @@
-import React, { useState, useEffect } from "react";
-import { ChevronDown, Dumbbell, Users, Calendar, Trophy } from "lucide-react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { 
+  ChevronDown, 
+  Dumbbell, 
+  Users, 
+  Calendar, 
+  Trophy,
+  Target,
+  Heart,
+  BarChart,
+  Clock
+} from 'lucide-react';
+import { Card, CardContent } from '../Components/card';
+import { Link } from 'react-router-dom';
+
+const features = [
+  {
+    Icon: Dumbbell,
+    title: "Smart Workouts",
+    description: "AI-powered workout plans that adapt to your progress and preferences"
+  },
+  {
+    Icon: Users,
+    title: "Community Support",
+    description: "Join a thriving community of fitness enthusiasts and share your journey"
+  },
+  {
+    Icon: Target,
+    title: "Goal Setting",
+    description: "Set and track personalized fitness goals with milestone celebrations"
+  },
+  {
+    Icon: Heart,
+    title: "Health Metrics",
+    description: "Monitor vital health statistics and wellness indicators"
+  },
+  {
+    Icon: Calendar,
+    title: "Smart Scheduling",
+    description: "AI-powered session planning that fits your busy lifestyle"
+  },
+  {
+    Icon: BarChart,
+    title: "Progress Analytics",
+    description: "Advanced analytics and progress visualization tools"
+  },
+  {
+    Icon: Clock,
+    title: "Time Management",
+    description: "Efficient workout planning to maximize your time"
+  },
+  {
+    Icon: Trophy,
+    title: "Achievements",
+    description: "Earn badges and rewards as you reach your fitness goals"
+  }
+];
+
+const FeatureCard = ({ Icon, title, description }) => (
+  <Card className="transform hover:scale-105 transition-all duration-300">
+    <CardContent className="p-6">
+      <Icon className="w-8 h-8 text-primary mb-4" />
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
+);
+
+const Button = ({ variant = 'primary', children, ...props }) => (
+  <button
+    className={`px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 ${
+      variant === 'primary'
+        ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+        : 'border border-primary text-primary hover:bg-primary hover:text-primary-foreground'
+    }`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+const TestimonialCard = ({ name, role, content }) => (
+  <Card className="h-full">
+    <CardContent className="p-6">
+      <p className="text-muted-foreground mb-4">{content}</p>
+      <div>
+        <p className="font-semibold">{name}</p>
+        <p className="text-sm text-muted-foreground">{role}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
 
 const LandingPage = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
-  const features = [
-    {
-      icon: <Dumbbell className="w-8 h-8" />,
-      title: "Custom Workouts",
-      description: "Personalized training programs tailored to your goals",
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Expert Trainers",
-      description: "Learn from certified fitness professionals",
-    },
-    {
-      icon: <Calendar className="w-8 h-8" />,
-      title: "Flexible Scheduling",
-      description: "Book sessions that fit your lifestyle",
-    },
-    {
-      icon: <Trophy className="w-8 h-8" />,
-      title: "Track Progress",
-      description: "Monitor your gains with detailed analytics",
-    },
-  ];
-
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative h-screen flex items-center justify-center">
-        <div
-          className={`max-w-4xl mx-auto text-center transition-all duration-1000 transform ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-          }`}
-        >
-          <h1 className="text-6xl font-bold mb-6">
-            <span className="text-black">Welcome to</span>{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-background/50">
+        <div className="max-w-4xl mx-auto text-center p-4">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            Welcome to{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
               StrengthStation
             </span>
           </h1>
-          <p className="text-xl text-gray-300 mb-8">
-            Your journey to peak performance starts here
+          <p className="text-xl text-muted-foreground mb-8">
+            Transform your fitness journey with AI-powered personalization
           </p>
-          <Link
-            to="/signup"
-            className="text-blue-500 hover:text-blue-400 transition-colors"
-          >
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105">
-              Start Your Journey
-            </button>
-          </Link>
-        </div>
-
-        <div className="absolute bottom-10 w-full text-center animate-bounce">
-          <ChevronDown className="w-8 h-8 mx-auto" />
+          <div className="space-x-4">
+            <Link to='/signup'><Button>Get Started Free</Button></Link>
+            <Button variant="secondary">View Demo</Button>
+          </div>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className="py-20 border border-solid border-zinc-950 bg-transparent relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 opacity-50 rounded-lg"></div>
-        <div className="max-w-6xl mx-auto px-4 relative z-10">
+      <div className="py-20">
+        <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-16">
-            Why Choose StrengthStation?
+            Revolutionary Features
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div
-                key={index}
-                className="bg-gray-700 p-6 rounded-lg transform hover:scale-105 transition-all duration-300 hover:shadow-xl relative"
-              >
-                <div className="text-blue-500 mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-300">{feature.description}</p>
-              </div>
+              <FeatureCard key={index} {...feature} />
             ))}
           </div>
         </div>
       </div>
 
+      {/* Testimonials Section */}
+      <div className="py-20 bg-muted/50">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-16">
+            Success Stories
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <TestimonialCard
+              name="Sarah Johnson"
+              role="Marathon Runner"
+              content="StrengthStation's AI coaching helped me achieve my personal best in just 3 months. The personalized training plans are incredible!"
+            />
+            <TestimonialCard
+              name="Mike Chen"
+              role="Fitness Enthusiast"
+              content="The community support and progress tracking features keep me motivated. I've never stuck to a fitness program this long before."
+            />
+            <TestimonialCard
+              name="Emily Rodriguez"
+              role="CrossFit Athlete"
+              content="The smart scheduling and workout customization are game-changers. Perfect for busy professionals who want results."
+            />
+          </div>
+        </div>
+      </div>
+
       {/* CTA Section */}
-      <div className="py-20 min-h-screen">
+      <div className="py-20">
         <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-4xl font-bold mb-8">Ready to Transform?</h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Join thousands of others who have already started their fitness
-            journey with us.
+          <h2 className="text-4xl font-bold mb-8">Start Your Journey Today</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Join thousands of members who have transformed their lives with
+            StrengthStation's intelligent fitness platform.
           </p>
           <div className="space-x-4">
-            <Link
-              to="/signup"
-              className="text-blue-500 hover:text-blue-400 transition-colors"
-            >
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105">
-                Sign Up Now
-              </button>
-            </Link>
-            <button className="border border-blue-600 text-blue-500 hover:bg-blue-600 hover:text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300">
-              Learn More
-            </button>
+            <Link to='/signup' ><Button>Sign Up Now</Button></Link>
+            <Button variant="secondary">Schedule Demo</Button>
           </div>
         </div>
       </div>

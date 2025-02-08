@@ -48,7 +48,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 ">
       <div className="max-w-md w-full space-y-8 bg-transparent p-8 rounded-xl shadow-2xl transform transition-all duration-500 hover:scale-[1.01]">
         <div className="text-center">
           <h2 className="text-4xl font-bold text-gray-700 mb-2">
