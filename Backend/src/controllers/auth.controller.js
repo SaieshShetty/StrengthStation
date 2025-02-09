@@ -5,28 +5,87 @@ import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
-  const { email, fullName, password, age } = req.body;
+  const { 
+    email, 
+    fullName, 
+    password, 
+    age,
+    height,
+    weight,
+    fitnessLevel,
+    preferences
+  } = req.body;
+
   try {
-    if (!email || !password || !fullName || !age)
-      return res.status(400).json({ message: "All Fields are required.!" });
+    // Basic field validation
+    if (!email || !password || !fullName || !age || !height || !weight || !fitnessLevel) {
+      return res.status(400).json({ message: "All fields are required!" });
+    }
 
-    if (password.length < 6)
-      return res
-        .status(400)
-        .json({ message: "Password must be atleast of 6 characters" });
+    // Password validation
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        message: "Password must be at least 6 characters" 
+      });
+    }
 
+    // Age validation
+    if (age < 13 || age > 120) {
+      return res.status(400).json({ 
+        message: "Age must be between 13 and 120 years" 
+      });
+    }
+
+    // Height and weight validation based on measurement unit
+    const isMetric = preferences?.measurementUnit === 'Metric';
+    if (isMetric) {
+      if (height < 100 || height > 250) {
+        return res.status(400).json({ 
+          message: "Height must be between 100cm and 250cm" 
+        });
+      }
+      if (weight < 30 || weight > 300) {
+        return res.status(400).json({ 
+          message: "Weight must be between 30kg and 300kg" 
+        });
+      }
+    } else {
+      if (height < 36 || height > 96) {
+        return res.status(400).json({ 
+          message: "Height must be between 36 and 96 inches" 
+        });
+      }
+      if (weight < 66 || weight > 660) {
+        return res.status(400).json({ 
+          message: "Weight must be between 66 and 660 lbs" 
+        });
+      }
+    }
+
+    // Check if user exists
     const user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-    if (user) return res.status(400).json({ message: "User already exists" });
-
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create new user with all fields
     const newUser = new User({
       fullName,
       email,
       password: hashedPassword,
       age,
+      height,
+      weight,
+      fitnessLevel,
+      preferences: {
+        measurementUnit: preferences?.measurementUnit || 'Metric',
+        workoutReminders: preferences?.workoutReminders || true,
+        preferredWorkoutTime: preferences?.preferredWorkoutTime || 'morning'
+      }
     });
 
     if (newUser) {
@@ -38,6 +97,10 @@ export const signup = async (req, res) => {
         email: newUser.email,
         age: newUser.age,
         profilePic: newUser.profilePic,
+        height: newUser.height,
+        weight: newUser.weight,
+        fitnessLevel: newUser.fitnessLevel,
+        preferences: newUser.preferences
       });
     }
   } catch (error) {

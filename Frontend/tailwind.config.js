@@ -37,6 +37,6 @@ export default {
     require("tailwindcss-animate")
   ],
   daisyui: {
-    themes: ["light", "business", "retro", "cyberpunk", "luxury", "synthwave","wireframe"],
+    themes: ["light", "lemonade", "retro", "cyberpunk", "dracula", "synthwave","pastel"],
   },
 }

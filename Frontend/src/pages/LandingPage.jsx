@@ -95,7 +95,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-background/50">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="max-w-4xl mx-auto text-center p-4">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
             Welcome to{" "}

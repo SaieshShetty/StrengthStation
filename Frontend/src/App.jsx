@@ -11,6 +11,10 @@ import UserPage from "./pages/UserPage";
 import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
 import Navbar from "./Components/Navbar.jsx";
+import Goals from "./pages/Goals.jsx";
+import WorkSchedule from "./pages/WorkSchedule.jsx";
+import ProgressTracker from "./pages/ProgressTracker.jsx";
+import Community from "./pages/Community.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -48,6 +52,10 @@ const App = () => {
           {authUser && (
             <>
               <Route path="/user" element={<UserPage />} />
+              <Route path="/goals" element={<Goals />} />
+              <Route path="/schedule" element={<WorkSchedule />} />
+              <Route path="/progress" element={<ProgressTracker />} />
+              <Route path="/community" element={<Community />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />

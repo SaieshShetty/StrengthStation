@@ -89,8 +89,8 @@ const Navbar = () => {
                 type="radio"
                 name="theme-dropdown"
                 className="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                aria-label="Business"
-                value="business"
+                aria-label="Lemonade"
+                value="lemonade"
               />
             </li>
             <li>
@@ -116,8 +116,8 @@ const Navbar = () => {
                 type="radio"
                 name="theme-dropdown"
                 className="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                aria-label="Synthwave"
-                value="synthwave"
+                aria-label="Dracula"
+                value="dracula"
               />
             </li>
             <li>
@@ -125,8 +125,8 @@ const Navbar = () => {
                 type="radio"
                 name="theme-dropdown"
                 className="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                aria-label="Wireframe"
-                value="wireframe"
+                aria-label="Pastel"
+                value="pastel"
               />
             </li>
           </ul>
