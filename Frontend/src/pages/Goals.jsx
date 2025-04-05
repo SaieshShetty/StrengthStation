@@ -23,64 +23,42 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../Components/card";
-
-// Custom Toast Component
-const Toast = ({ message, type, onClose }) => (
-  <div
-    className={`fixed bottom-4 right-4 flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white transform transition-transform duration-300 ease-in-out ${
-      type === "success"
-        ? "bg-green-500"
-        : type === "warning"
-        ? "bg-yellow-500"
-        : type === "error"
-        ? "bg-red-500"
-        : "bg-blue-500"
-    }`}
-  >
-    <span>{message}</span>
-    <button onClick={onClose} className="ml-2">
-      <X className="w-4 h-4" />
-    </button>
-  </div>
-);
+import useGoalsStore from "../store/useGoalsStore";
+import { Toaster } from "react-hot-toast";
 
 const Goals = () => {
-  const [goals, setGoals] = useState([
-    {
-      id: 1,
-      text: "Complete 100 pushups daily",
-      completed: false,
-      category: "Strength",
-      priority: "High",
-      status: "In Progress",
-      progress: { current: 50, target: 100, unit: "reps" },
-      targetDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      reminders: [
-        { date: new Date(), message: "Time for pushups!", isRead: false },
-      ],
-    },
-  ]);
+  // Get state and actions from Zustand store
+  const {
+    goals,
+    isLoading,
+    error,
+    fetchGoals,
+    addGoal,
+    updateGoal,
+    deleteGoal,
+    updateGoalProgress,
+    getCompletionStats,
+  } = useGoalsStore();
+
+  // Local form state
   const [newGoal, setNewGoal] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Strength");
   const [selectedPriority, setSelectedPriority] = useState("Medium");
   const [targetDate, setTargetDate] = useState("");
   const [progressTarget, setProgressTarget] = useState("");
   const [progressUnit, setProgressUnit] = useState("reps");
-  const [toast, setToast] = useState(null);
+  
+  // Fetch goals on component mount
+  useEffect(() => {
+    fetchGoals();
+  }, [fetchGoals]);
 
   const categories = ["Strength", "Cardio", "Nutrition", "Flexibility"];
   const priorities = ["Low", "Medium", "High"];
   const statuses = ["Not Started", "In Progress", "Completed", "Archived"];
 
-  const showToast = (message, type = "info") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  // Calculate statistics for charts
-  const completedGoals = goals.filter((goal) => goal.completed).length;
-  const totalGoals = goals.length;
-  const completionRate = (completedGoals / totalGoals) * 100;
+  // Get stats for charts from the Zustand store
+  const { totalGoals, completedGoals, completionRate } = getCompletionStats();
 
   const pieData = [
     { name: "Completed", value: completedGoals },
@@ -88,7 +66,7 @@ const Goals = () => {
   ];
 
   const COLORS = {
-    Completed: "#4CAF50",
+    Completed: "#9ee6a1",
     Pending: "#ff9800",
     High: "#ef4444",
     Medium: "#f59e0b",
@@ -100,19 +78,15 @@ const Goals = () => {
     progress: (goal.progress.current / goal.progress.target) * 100,
   }));
 
-  const addGoal = (e) => {
+  const handleAddGoal = async (e) => {
     e.preventDefault();
     if (!newGoal.trim() || !progressTarget) {
-      showToast("Please fill in all required fields", "error");
-      return;
+      return; // Toast will be handled by the store
     }
 
-    setGoals([
-      ...goals,
-      {
-        id: Date.now(),
+    try {
+      await addGoal({
         text: newGoal,
-        completed: false,
         category: selectedCategory,
         priority: selectedPriority,
         status: "Not Started",
@@ -122,81 +96,71 @@ const Goals = () => {
           unit: progressUnit,
         },
         targetDate: targetDate ? new Date(targetDate) : null,
-        reminders: [],
-      },
-    ]);
-    setNewGoal("");
-    setProgressTarget("");
-    showToast("Goal added successfully!", "success");
+      });
+      
+      // Reset form
+      setNewGoal("");
+      setProgressTarget("");
+    } catch (error) {
+      console.error("Error adding goal:", error);
+    }
   };
 
-  const updateProgress = (id, newProgress) => {
-    setGoals(
-      goals.map((goal) => {
-        if (goal.id === id) {
-          const updated = {
-            ...goal,
-            progress: {
-              ...goal.progress,
-              current: Math.min(Number(newProgress), goal.progress.target),
-            },
-          };
-          // Auto-complete if target reached
-          if (updated.progress.current >= updated.progress.target) {
-            updated.completed = true;
-            updated.status = "Completed";
-            showToast("🎉 Congratulations! Goal completed!", "success");
-          }
-          return updated;
+  const handleUpdateProgress = async (id, newProgress) => {
+    try {
+      await updateGoalProgress(id, {
+        current: Math.min(Number(newProgress), 
+          goals.find(g => g._id === id).progress.target)
+      });
+    } catch (error) {
+      console.error("Error updating progress:", error);
+    }
+  };
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      await updateGoal(id, { status: newStatus });
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const handleAddReminder = async (id, message) => {
+    try {
+      const goal = goals.find(g => g._id === id);
+      const updatedReminders = [
+        ...goal.reminders,
+        {
+          date: new Date(),
+          message,
+          isRead: false,
         }
-        return goal;
-      })
-    );
+      ];
+      
+      await updateGoal(id, { reminders: updatedReminders });
+    } catch (error) {
+      console.error("Error adding reminder:", error);
+    }
   };
 
-  const updateStatus = (id, newStatus) => {
-    setGoals(
-      goals.map((goal) => {
-        if (goal.id === id) {
-          showToast(`Status updated to ${newStatus}`, "info");
-          return { ...goal, status: newStatus };
-        }
-        return goal;
-      })
-    );
-  };
-
-  const addReminder = (id, message) => {
-    setGoals(
-      goals.map((goal) => {
-        if (goal.id === id) {
-          showToast("Reminder set!", "success");
-          return {
-            ...goal,
-            reminders: [
-              ...goal.reminders,
-              {
-                date: new Date(),
-                message,
-                isRead: false,
-              },
-            ],
-          };
-        }
-        return goal;
-      })
-    );
-  };
-
-  const deleteGoal = (id) => {
-    setGoals(goals.filter((g) => g.id !== id));
-    showToast("Goal deleted", "warning");
+  const handleDeleteGoal = async (id) => {
+    try {
+      await deleteGoal(id);
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+    }
   };
 
   return (
     <div className="min-h-screen p-6">
+      <Toaster position="bottom-right" />
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold mb-8">Fitness Goals Tracker</h1>
+        
+        {/* Loading state */}
+        {isLoading && <div className="text-center py-4">Loading goals...</div>}
+        {error && <div className="text-center py-4 text-red-500">{error}</div>}
+        
         {/* Analytics Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card>
@@ -244,7 +208,7 @@ const Goals = () => {
         {/* Add Goal Form */}
         <Card className="mb-8">
           <CardContent className="pt-6">
-            <form onSubmit={addGoal} className="space-y-4">
+            <form onSubmit={handleAddGoal} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
@@ -252,11 +216,13 @@ const Goals = () => {
                   className="input input-bordered w-full"
                   value={newGoal}
                   onChange={(e) => setNewGoal(e.target.value)}
+                  disabled={isLoading}
                 />
                 <select
                   className="select select-bordered w-full"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
+                  disabled={isLoading}
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
@@ -271,6 +237,7 @@ const Goals = () => {
                   className="select select-bordered w-full"
                   value={selectedPriority}
                   onChange={(e) => setSelectedPriority(e.target.value)}
+                  disabled={isLoading}
                 >
                   {priorities.map((priority) => (
                     <option key={priority} value={priority}>
@@ -286,6 +253,7 @@ const Goals = () => {
                     className="input input-bordered w-full"
                     value={progressTarget}
                     onChange={(e) => setProgressTarget(e.target.value)}
+                    disabled={isLoading}
                   />
                   <input
                     type="text"
@@ -293,6 +261,7 @@ const Goals = () => {
                     className="input input-bordered w-full"
                     value={progressUnit}
                     onChange={(e) => setProgressUnit(e.target.value)}
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -301,10 +270,15 @@ const Goals = () => {
                   className="input input-bordered w-full"
                   value={targetDate}
                   onChange={(e) => setTargetDate(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary w-full">
+              <button 
+                type="submit" 
+                className="btn btn-primary w-full"
+                disabled={isLoading}
+              >
                 <Plus className="w-5 h-5" /> Add Goal
               </button>
             </form>
@@ -317,7 +291,7 @@ const Goals = () => {
             <CardTitle>Current Goals</CardTitle>
           </CardHeader>
           <CardContent>
-            {goals.length === 0 ? (
+            {!isLoading && goals.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 No goals yet. Add some goals to get started!
               </div>
@@ -325,8 +299,8 @@ const Goals = () => {
               <div className="space-y-4">
                 {goals.map((goal) => (
                   <div
-                    key={goal.id}
-                    className={`p-4 rounded-lg border bg-gray-300 ${
+                    key={goal._id}
+                    className={`p-4 rounded-lg border ${
                       goal.completed
                         ? "bg-green-50 border-green-200"
                         : "bg-white border-gray-200"
@@ -363,7 +337,7 @@ const Goals = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <div className="flex-1  rounded-full h-2">
+                          <div className="flex-1 rounded-full h-2">
                             <div
                               className="bg-blue-600 h-2 rounded-full"
                               style={{
@@ -388,18 +362,20 @@ const Goals = () => {
                           className="input input-bordered input-sm w-20"
                           value={goal.progress.current}
                           onChange={(e) =>
-                            updateProgress(goal.id, e.target.value)
+                            handleUpdateProgress(goal._id, e.target.value)
                           }
                           min="0"
                           max={goal.progress.target}
+                          disabled={isLoading}
                         />
 
                         <select
                           className="select select-bordered select-sm"
                           value={goal.status}
                           onChange={(e) =>
-                            updateStatus(goal.id, e.target.value)
+                            handleUpdateStatus(goal._id, e.target.value)
                           }
+                          disabled={isLoading}
                         >
                           {statuses.map((status) => (
                             <option key={status} value={status}>
@@ -410,18 +386,20 @@ const Goals = () => {
 
                         <button
                           onClick={() =>
-                            addReminder(goal.id, "Check your progress!")
+                            handleAddReminder(goal._id, "Check your progress!")
                           }
                           className="btn btn-ghost btn-sm"
                           title="Add reminder"
+                          disabled={isLoading}
                         >
                           <Bell className="w-5 h-5" />
                         </button>
 
                         <button
-                          onClick={() => deleteGoal(goal.id)}
+                          onClick={() => handleDeleteGoal(goal._id)}
                           className="btn btn-ghost btn-sm text-red-500"
                           title="Delete goal"
+                          disabled={isLoading}
                         >
                           <X className="w-5 h-5" />
                         </button>
@@ -448,15 +426,6 @@ const Goals = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Toast Container */}
-        {toast && (
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            onClose={() => setToast(null)}
-          />
-        )}
       </div>
     </div>
   );

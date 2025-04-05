@@ -24,12 +24,12 @@ const UserPage = () => {
           className="group relative overflow-hidden rounded-xl bg-primary text-primary-content hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 cursor-pointer"
         >
           <div className="p-8">
-            <Target className="w-12 h-12 mb-4" />
-            <h2 className="text-3xl font-bold mb-4">Set Your Goals</h2>
-            <p className="text-lg opacity-90 mb-6">
+            <Target className="w-12 h-12 mb-4 fill-white" />
+            <h2 className="text-3xl font-bold mb-4 text-white">Set Your Goals</h2>
+            <p className="text-lg opacity-90 mb-6 text-white">
               Define your fitness journey with customizable targets and milestone tracking
             </p>
-            <div className="flex items-center space-x-2 text-lg font-semibold">
+            <div className="flex items-center space-x-2 text-lg font-semibold text-white">
               <span>Create New Goal</span>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </div>

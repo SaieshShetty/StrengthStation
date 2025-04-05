@@ -2,7 +2,9 @@ import express from 'express' ;
 import dotenv from 'dotenv'
 import cookieParser from "cookie-parser"
 import cors from 'cors';
-import authRoutes from './routes/auth.route.js'
+import authRoutes from './routes/auth.route.js';
+import goalRoutes from './routes/goal.route.js';
+import scheduleRoutes from './routes/schedule.route.js'
 
 const app = express() ;
 
@@ -25,6 +27,8 @@ app.use(cors({
 ))
 
 app.use("/api/auth" , authRoutes) ;
+app.use("/api/goal" , goalRoutes) ;
+app.use("/api/schedule" , scheduleRoutes) ;
 
 app.listen(PORT , () => {
     console.log("Server is running on PORT:" +PORT);
