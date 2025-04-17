@@ -1,11 +1,12 @@
-import React from "react";
-import { BicepsFlexed, Palette } from "lucide-react";
+import React, { useState } from "react";
+import { BicepsFlexed, Palette, ChevronDown, UserPlus, LogIn } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 
 const Navbar = () => {
   const { authUser } = useAuthStore();
   const navigate = useNavigate();
+  const [isAuthDropdownOpen, setIsAuthDropdownOpen] = useState(false);
 
   const handleClick = () => {
     if (authUser) {
@@ -13,6 +14,10 @@ const Navbar = () => {
     } else {
       navigate("/");
     }
+  };
+
+  const toggleAuthDropdown = () => {
+    setIsAuthDropdownOpen(!isAuthDropdownOpen);
   };
 
   return (
@@ -27,13 +32,43 @@ const Navbar = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="form-control">
-          <input
-            type="text"
-            placeholder="Search"
-            className="input input-bordered w-24 md:w-auto"
-          />
-        </div>
+        {/* Auth Dropdown - Replacing the search input */}
+        {!authUser && (
+          <div className="relative">
+            <button 
+              onClick={toggleAuthDropdown}
+              className="flex items-center gap-2 px-4 py-2 bg-transparent text-primary-content rounded-3xl shadow-md hover:bg-primary-focus transition-all duration-300"
+            >
+              <span className="font-medium">Account</span>
+              <ChevronDown 
+                size={18} 
+                className={`transition-transform duration-300 ${isAuthDropdownOpen ? 'rotate-180' : ''}`} 
+              />
+            </button>
+            
+            {isAuthDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-base-100 rounded-lg shadow-xl overflow-hidden origin-top-right">
+                <div className="py-1">
+                  <Link 
+                    to="/signup" 
+                    className="flex items-center gap-3 px-4 py-3 text-base-content hover:bg-base-200 transition-colors duration-200"
+                  >
+                    <UserPlus size={18} />
+                    <span>Sign Up</span>
+                  </Link>
+                  <div className="border-t border-base-300"></div>
+                  <Link 
+                    to="/login" 
+                    className="flex items-center gap-3 px-4 py-3 text-base-content hover:bg-base-200 transition-colors duration-200"
+                  >
+                    <LogIn size={18} />
+                    <span>Log In</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {authUser && (
           <div className="dropdown dropdown-end">

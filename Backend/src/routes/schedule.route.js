@@ -15,7 +15,7 @@ const router = express.Router();
 // Apply authentication middleware to all routes
 router.use(protectRoute);
 
-// Fetch all schedule items for a user - changing to match how the frontend is calling it
+// Fetch all schedule items for a user
 router.get("/fetchschedule/:userId", getSchedule);
 
 // Get a single schedule item

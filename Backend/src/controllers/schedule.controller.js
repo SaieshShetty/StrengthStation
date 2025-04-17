@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 
 export const getSchedule = async (req, res) => {
   try {
-    const userId = req.user._id; // Using _id instead of id to match the goal controller pattern
+    // Check if userId is from parameter (for frontend compatibility) or from auth middleware
+    const userId = req.params.userId === 'currentUserId' ? req.user._id : req.params.userId;
+    
     const schedule = await Schedule.find({ user: userId }).sort({ preferredTime: 1 });
     
     res.status(200).json(schedule);
@@ -45,6 +47,8 @@ export const getScheduleItem = async (req, res) => {
 
 export const createScheduleItem = async (req, res) => {
   try {
+    console.log("Received data for new schedule item:", req.body);
+    
     const {
       type,
       duration,
@@ -53,8 +57,16 @@ export const createScheduleItem = async (req, res) => {
       intensity,
       equipment,
       days,
-      notes
+      notes,
+      userId
     } = req.body;
+    
+    // Use authenticated user ID or the provided userId (fallback)
+    const userIdToUse = req.user._id || userId;
+    
+    if (!userIdToUse) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
     
     // Validate required fields
     if (!type || !duration || !preferredTime || !intensity || !equipment || !days || days.length === 0) {
@@ -62,9 +74,9 @@ export const createScheduleItem = async (req, res) => {
     }
     
     // Check for scheduling conflicts
-    const conflicts = await Schedule.findConflicts(req.user._id, days, preferredTime);
+    const conflicts = await Schedule.findConflicts(userIdToUse, days, preferredTime);
     
-    if (conflicts.length > 0) {
+    if (conflicts && conflicts.length > 0) {
       return res.status(409).json({ 
         message: "Scheduling conflict detected",
         conflicts: conflicts.map(c => ({
@@ -77,7 +89,7 @@ export const createScheduleItem = async (req, res) => {
     }
     
     const newScheduleItem = new Schedule({
-      user: req.user._id,
+      user: userIdToUse,
       type,
       duration,
       preferredTime,
@@ -91,6 +103,7 @@ export const createScheduleItem = async (req, res) => {
     await newScheduleItem.validate();
     const savedScheduleItem = await newScheduleItem.save();
     
+    console.log("Successfully saved schedule item:", savedScheduleItem._id);
     res.status(201).json(savedScheduleItem);
   } catch (error) {
     console.error("Error creating schedule item:", error);
@@ -149,7 +162,7 @@ export const updateScheduleItem = async (req, res) => {
         id
       );
       
-      if (conflicts.length > 0) {
+      if (conflicts && conflicts.length > 0) {
         return res.status(409).json({ 
           message: "Scheduling conflict detected",
           conflicts: conflicts.map(c => ({
@@ -273,21 +286,21 @@ export const getWorkoutStats = async (req, res) => {
     
     // Get total workouts by type
     const workoutsByType = await Schedule.aggregate([
-      { $match: { user: mongoose.Types.ObjectId(userId) } },
+      { $match: { user: mongoose.Types.ObjectId.createFromHexString(userId.toString()) } },
       { $group: { _id: "$type", count: { $sum: 1 } } },
       { $sort: { count: -1 } }
     ]);
     
     // Get completed sessions count
     const completedSessions = await Schedule.aggregate([
-      { $match: { user: mongoose.Types.ObjectId(userId) } },
+      { $match: { user: mongoose.Types.ObjectId.createFromHexString(userId.toString()) } },
       { $unwind: "$completed" },
       { $count: "total" }
     ]);
     
     // Get completion rate by workout type
     const completionRates = await Schedule.aggregate([
-      { $match: { user: mongoose.Types.ObjectId(userId) } },
+      { $match: { user: mongoose.Types.ObjectId.createFromHexString(userId.toString()) } },
       {
         $project: {
           type: 1,
